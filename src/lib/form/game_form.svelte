@@ -43,7 +43,7 @@
 			)
 		};
 		if (game) {
-			const updateRes = await gameStore.put(game.id, data);
+			const updateRes = await gameStore.patch(game.id, undefined, data);
 			if (updateRes.ok) {
 				showSuccess();
 				return;

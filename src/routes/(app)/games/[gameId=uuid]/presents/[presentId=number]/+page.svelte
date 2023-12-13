@@ -2,7 +2,6 @@
 	import { page } from '$app/stores';
 	import { derivedById } from '$lib/store/async_store';
 	import { gameStore } from '$lib/store/game_store';
-	import { useHeroStore } from '$lib/store/hero_store';
 	import { usePresentStore } from '$lib/store/present_store';
 	import NameCard from '$lib/ui/name_card.svelte';
 	import { showError } from '$lib/util/notif';
@@ -12,8 +11,12 @@
 	const game = derivedById(gameStore, $page.params.gameId);
 	const presentStore = usePresentStore($page.params.gameId);
 	const present = derivedById(presentStore, parseInt($page.params.presentId, 10));
-	const images = derived(present, ($present) => $present?.wrapped_images || []);
-	const heroImage = useHeroStore($images);
+	const heroImage = derived(
+		present,
+		($present) =>
+			($present?.wrapped_images && $present.wrapped_images.length && $present.wrapped_images[0]) ||
+			''
+	);
 
 	onMount(() => {
 		if (!$present) {

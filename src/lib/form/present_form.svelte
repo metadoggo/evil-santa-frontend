@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { usePresentStore, type Present } from '$lib/store/present_store';
 	import { goto } from '$app/navigation';
-	import type { AsyncResult } from '$lib/store/async_store';
 	import ImageGallery from '$lib/ui/image_gallery.svelte';
 	import { showError, showSuccess } from '$lib/util/notif';
 	import { getModalStore } from '@skeletonlabs/skeleton';
+	import { auth } from '$lib/firebase';
 
 	type Form = {
 		name: string;
@@ -28,24 +28,31 @@
 	let inFlight = false;
 
 	async function onSubmit() {
-		inFlight = true;
-		let res: AsyncResult;
-		if (present) {
-			res = await presentStore.put(present.id, undefined, form);
-		} else {
-			res = await presentStore.create(form);
-			auth.currentUser?.getIdTokenResult(true);
+		if (!auth.currentUser) {
+			showError('Please sign in');
+			return;
 		}
-		inFlight = false;
-		if (res.ok) {
-			showSuccess();
-			if (res.id) {
-				goto(`${res.id}/edit`);
+		inFlight = true;
+		if (present) {
+			const updateRes = await presentStore.patch(present.id, undefined, form);
+			if (updateRes.ok) {
+				showSuccess();
 				return;
+			} else {
+				showError(`${updateRes.status}: ${updateRes.message}`);
 			}
 		} else {
-			showError(`${res.status}: ${res.message}`);
+			const createRes = await presentStore.create(form);
+			auth.currentUser.getIdTokenResult(true);
+			if (createRes.ok) {
+				showSuccess();
+				goto(`${createRes.id}/edit`);
+				return;
+			} else {
+				showError(`${createRes.status}: ${createRes.message}`);
+			}
 		}
+		inFlight = false;
 	}
 
 	function deletePresent() {

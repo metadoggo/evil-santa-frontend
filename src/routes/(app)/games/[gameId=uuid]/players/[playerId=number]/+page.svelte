@@ -2,7 +2,6 @@
 	import { page } from '$app/stores';
 	import { derivedById } from '$lib/store/async_store';
 	import { gameStore } from '$lib/store/game_store';
-	import { useHeroStore } from '$lib/store/hero_store';
 	import { usePlayerStore } from '$lib/store/player_store';
 	import { showError } from '$lib/util/notif';
 	import { Avatar } from '@skeletonlabs/skeleton';
@@ -14,12 +13,14 @@
 	const game = derivedById(gameStore, $page.params.gameId);
 	const playerStore = usePlayerStore($page.params.gameId);
 	const player = derivedById(playerStore, parseInt($page.params.playerId, 10));
-	const images = derived(player, ($player) => $player?.images || []);
-	const heroImage = useHeroStore($images, 1600);
+	const heroImage = derived(
+		player,
+		($player) => ($player?.images && $player.images.length && $player.images[0]) || ''
+	);
 
 	onMount(() => {
 		if (!$player) {
-			playerStore.fetchOne($page.params.playerId).catch(showError);
+			playerStore.fetchOne(parseInt($page.params.playerId, 10)).catch(showError);
 		}
 		if (!$game) {
 			gameStore.fetchOne($page.params.gameId);
@@ -46,20 +47,18 @@
 <main class="max-w-screen-md my-8 text-center mx-auto">
 	{#if $player}
 		<div class="w-64 h-64 relative mx-auto">
-			{#key $heroImage}
-				<div
-					in:fade={{ duration: 600, easing: expoInOut }}
-					out:fade={{ duration: 600, easing: expoInOut }}
-					class="absolute"
-				>
-					<Avatar
-						src={$heroImage}
-						initials={$player.name}
-						rounded="rounded-full"
-						class="w-full h-full"
-					/>
-				</div>
-			{/key}
+			<div
+				in:fade={{ duration: 600, easing: expoInOut }}
+				out:fade={{ duration: 600, easing: expoInOut }}
+				class="absolute"
+			>
+				<Avatar
+					src={$heroImage}
+					initials={$player.name}
+					rounded="rounded-full"
+					class="w-full h-full"
+				/>
+			</div>
 		</div>
 		<h1 class="h1">
 			{$player.name || ''}

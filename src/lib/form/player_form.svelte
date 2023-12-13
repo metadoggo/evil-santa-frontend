@@ -33,23 +33,26 @@
 			return;
 		}
 		inFlight = true;
-		let res: AsyncResult;
 		if (player) {
-			res = await playerStore.put(player.id, undefined, form);
-		} else {
-			res = await playerStore.create(form);
-			auth.currentUser.getIdTokenResult(true);
-		}
-		inFlight = false;
-		if (res.ok) {
-			showSuccess();
-			if (res.id) {
-				goto(`${res.id}/edit`);
+			const updateRes = await playerStore.patch(player.id, undefined, form);
+			if (updateRes.ok) {
+				showSuccess();
 				return;
+			} else {
+				showError(`${updateRes.status}: ${updateRes.message}`);
 			}
 		} else {
-			showError(`${res.status}: ${res.message}`);
+			const createRes = await playerStore.create(form);
+			auth.currentUser.getIdTokenResult(true);
+			if (createRes.ok) {
+				showSuccess();
+				goto(`${createRes.id}/edit`);
+				return;
+			} else {
+				showError(`${createRes.status}: ${createRes.message}`);
+			}
 		}
+		inFlight = false;
 	}
 
 	function deletePlayer() {

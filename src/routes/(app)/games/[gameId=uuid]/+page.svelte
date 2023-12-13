@@ -1,16 +1,10 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import { gameStore } from '$lib/store/game_store';
-	import { usePlayerStore, type Player } from '$lib/store/player_store';
+	import { usePlayerStore } from '$lib/store/player_store';
 	import { onMount } from 'svelte';
 	import { derived } from 'svelte/store';
-	import {
-		derivedById,
-		sortByCreatedAt,
-		sortByName,
-		type UpdateResponse
-	} from '$lib/store/async_store';
-	import { useHeroStore } from '$lib/store/hero_store';
+	import { derivedById, sortByCreatedAt, sortByName } from '$lib/store/async_store';
 	import { showError, showSuccess } from '$lib/util/notif';
 	import NameCard from '$lib/ui/name_card.svelte';
 	import { usePresentStore } from '$lib/store/present_store';
@@ -32,8 +26,10 @@
 	const presents = derived(presentStore, ($presentStore) => {
 		return Object.values($presentStore).sort(sortByCreatedAt);
 	});
-	const images = derived(game, ($game) => $game?.images || []);
-	const heroImage = useHeroStore($images, 5000);
+	const heroImage = derived(
+		game,
+		($game) => ($game?.images && $game.images.length && $game.images[0]) || ''
+	);
 
 	onMount(() => {
 		if (!$game) {
