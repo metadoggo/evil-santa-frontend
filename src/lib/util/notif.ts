@@ -6,6 +6,7 @@ export function initializeNotifications() {
 }
 
 export function showError(message: string) {
+	toastStore.clear();
 	toastStore.trigger({
 		message,
 		background: 'variant-filled-error'
@@ -13,6 +14,7 @@ export function showError(message: string) {
 }
 
 export function showSuccess(message: string = 'Success!') {
+	toastStore.clear();
 	toastStore.trigger({
 		message,
 		background: 'variant-filled-success'
@@ -20,6 +22,7 @@ export function showSuccess(message: string = 'Success!') {
 }
 
 export function showWarning(message: string) {
+	toastStore.clear();
 	toastStore.trigger({
 		message,
 		background: 'variant-filled-warning'
@@ -27,6 +30,7 @@ export function showWarning(message: string) {
 }
 
 export function showInfo(message: string) {
+	toastStore.clear();
 	toastStore.trigger({
 		message,
 		background: 'variant-filled-tertiary'

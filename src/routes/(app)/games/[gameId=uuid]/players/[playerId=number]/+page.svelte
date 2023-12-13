@@ -63,10 +63,6 @@
 		<h1 class="h1">
 			{$player.name || ''}
 		</h1>
-		<div>
-			<span>Age: </span>
-			<span>{$player.age || ''}</span>
-		</div>
 		<a href={$player ? `${$player.id}/edit` : '#'} class="btn variant-ghost-primary my-4">✏️ Edit</a
 		>
 	{:else}

@@ -1,4 +1,3 @@
-import { derived } from 'svelte/store';
 import { useStore, type CreateResponse, type Schedulable } from './async_store';
 import type { BelongsToGame } from './game_store';
 
@@ -6,7 +5,6 @@ export type Player = BelongsToGame<number> &
 	Schedulable & {
 		game_id: string;
 		name: string;
-		age: number;
 		images: string[];
 	};
 
@@ -15,7 +13,6 @@ function playerBuilder(data: CreateResponse<number>): Player {
 		id: data.id,
 		game_id: data.game_id,
 		name: data.name,
-		age: data.age,
 		images: data.images,
 		createdAt: new Date(data.created_at),
 		updatedAt: data.updated_at ? new Date(data.updated_at) : undefined

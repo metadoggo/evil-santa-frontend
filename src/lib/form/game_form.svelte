@@ -80,14 +80,16 @@
 </script>
 
 <form on:submit|preventDefault={onSubmit} class="p-4 card">
-	<header class="">
-		<ImageGallery
-			bind:images={form.images}
-			purpose="game"
-			params={game ? { game_id: game.id } : undefined}
-			on:update={onSubmit}
-		/>
-	</header>
+	{#if game}
+		<header class="">
+			<ImageGallery
+				bind:images={form.images}
+				purpose="game"
+				params={game ? { game_id: game.id } : undefined}
+				on:update={onSubmit}
+			/>
+		</header>
+	{/if}
 	<main class="my-4">
 		<label class="label">
 			<span>Name</span>

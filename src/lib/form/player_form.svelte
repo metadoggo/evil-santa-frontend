@@ -11,7 +11,6 @@
 	type Form = {
 		name: string;
 		images: string[];
-		age?: number;
 	};
 
 	export let gameId: string;
@@ -21,8 +20,7 @@
 	const playerStore = usePlayerStore(gameId);
 	const form: Form = {
 		name: player?.name || '',
-		images: player?.images ? [...player.images] : [],
-		age: player?.age
+		images: player?.images ? [...player.images] : []
 	};
 
 	let inFlight = false;
@@ -31,6 +29,9 @@
 		if (!auth.currentUser) {
 			showError('Please sign in');
 			return;
+		}
+		if (!form.name) {
+			showError('Name is required');
 		}
 		inFlight = true;
 		if (player) {
@@ -73,26 +74,24 @@
 </script>
 
 <form on:submit|preventDefault={onSubmit} class="p-4 card">
-	<header class="">
-		<ImageGallery
-			bind:images={form.images}
-			purpose="player"
-			params={player ? { game_id: gameId, player_id: player.id } : undefined}
-			on:update={onSubmit}
-		/>
-	</header>
+	{#if player}
+		<header class="">
+			<ImageGallery
+				bind:images={form.images}
+				purpose="player"
+				params={player ? { game_id: gameId, player_id: player.id } : undefined}
+				on:update={onSubmit}
+			/>
+		</header>
+	{/if}
 	<main class="my-4">
 		<label class="label">
 			<span>Name</span>
-			<input name="name" bind:value={form.name} placeholder="E.g. John" class="input p-2" />
-		</label>
-		<label class="label">
-			<span>Age</span>
 			<input
-				name="age"
-				bind:value={form.age}
-				type="number"
-				placeholder="E.g. 12"
+				name="name"
+				bind:value={form.name}
+				placeholder="E.g. John"
+				required
 				class="input p-2"
 			/>
 		</label>

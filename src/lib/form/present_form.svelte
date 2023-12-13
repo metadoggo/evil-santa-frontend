@@ -20,7 +20,7 @@
 	const modalStore = getModalStore();
 	const presentStore = usePresentStore(gameId);
 	const form: Form = {
-		name: present?.name || '',
+		name: present?.name || `Present number ${Object.keys($presentStore).length + 1}`,
 		wrapped_images: present?.wrapped_images ? [...present.wrapped_images] : [],
 		unwrapped_images: present?.unwrapped_images ? [...present.unwrapped_images] : []
 	};
@@ -32,27 +32,29 @@
 			showError('Please sign in');
 			return;
 		}
+		if (!form.name) {
+			showError('Name is required');
+		}
 		inFlight = true;
 		if (present) {
 			const updateRes = await presentStore.patch(present.id, undefined, form);
+			inFlight = false;
 			if (updateRes.ok) {
 				showSuccess();
-				return;
 			} else {
 				showError(`${updateRes.status}: ${updateRes.message}`);
 			}
 		} else {
 			const createRes = await presentStore.create(form);
-			auth.currentUser.getIdTokenResult(true);
+			inFlight = false;
 			if (createRes.ok) {
 				showSuccess();
+				auth.currentUser.getIdTokenResult(true);
 				goto(`${createRes.id}/edit`);
-				return;
 			} else {
 				showError(`${createRes.status}: ${createRes.message}`);
 			}
 		}
-		inFlight = false;
 	}
 
 	function deletePresent() {
@@ -73,26 +75,34 @@
 </script>
 
 <form on:submit|preventDefault={onSubmit} class="p-4 card">
-	<header class="">
-		<h3 class="h3">Images (wrapped)</h3>
-		<ImageGallery
-			bind:images={form.wrapped_images}
-			purpose="present-wrapped"
-			params={uploadParams}
-			on:update={onSubmit}
-		/>
-		<h3 class="h3">Images (Unwrapped)</h3>
-		<ImageGallery
-			bind:images={form.unwrapped_images}
-			purpose="present-unwrapped"
-			params={uploadParams}
-			on:update={onSubmit}
-		/>
-	</header>
+	{#if present}
+		<header class="">
+			<h3 class="h3">Images (wrapped)</h3>
+			<ImageGallery
+				bind:images={form.wrapped_images}
+				purpose="present-wrapped"
+				params={uploadParams}
+				on:update={onSubmit}
+			/>
+			<h3 class="h3">Images (Unwrapped)</h3>
+			<ImageGallery
+				bind:images={form.unwrapped_images}
+				purpose="present-unwrapped"
+				params={uploadParams}
+				on:update={onSubmit}
+			/>
+		</header>
+	{/if}
 	<main class="my-4">
 		<label class="label">
-			<span>Name</span>
-			<input name="name" bind:value={form.name} placeholder="E.g. Present 1" class="input p-2" />
+			<span>Name/number</span>
+			<input
+				name="name"
+				bind:value={form.name}
+				placeholder="E.g. Present 1"
+				required
+				class="input p-2"
+			/>
 		</label>
 	</main>
 	<footer class="flex justify-between gap-4 mt-2">

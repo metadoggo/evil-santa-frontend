@@ -107,7 +107,7 @@ function createStore<T extends Identifiable<S>, S extends ID>(
 		const res = await doFetch(`${PUBLIC_API_URL}/${base}/${id}${makeQueryString(addQuery)}`, init);
 		if (res.ok) {
 			const data = await res.json<UpdateResponse>();
-			itemUpdater(store, id, data);
+			itemUpdater(store, id, { ...body, ...data });
 			return {
 				ok: res.ok,
 				status: res.status,
@@ -253,7 +253,6 @@ function defaultUpdater<T extends Identifiable<S>, S extends ID>(
 	data: Record<string, any>
 ) {
 	store.update((s) => {
-		const item = s[id];
 		s[id] = {
 			...s[id],
 			...data,

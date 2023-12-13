@@ -86,6 +86,7 @@
 	function setGameState(data: Record<string, any>) {
 		gameStore.update((s) => {
 			const item = s[$game.id];
+			// This also sets fields to undefined
 			for (const k in data) {
 				// @ts-ignore: How can this be done in a type-safe manner?
 				item[k] = data[k];
@@ -163,7 +164,7 @@
 		const res = await move('start');
 		if (res) {
 			setGameState({
-				updated_at: res.updated_at,
+				updatedAt: new Date(res.updated_at),
 				startedAt: new Date(res.started_at)
 			});
 		}
@@ -172,31 +173,42 @@
 	async function onResetClick() {
 		showInfo('Resetting game...');
 		const res = await move('reset');
-		presentStore.update((s) => {
-			for (const p of Object.values($presentStore)) {
-				s[p.id] = {
-					...p,
-					player_id: undefined
-				};
-			}
-			return s;
-		});
+		if (res) {
+			presentStore.update((s) => {
+				for (const p of Object.values($presentStore)) {
+					s[p.id] = {
+						...p,
+						player_id: undefined
+					};
+				}
+				return s;
+			});
 
-		setGameState({
-			...res,
-			started_at: undefined,
-			player_id: undefined,
-			present_id: undefined
-		});
+			setGameState({
+				...res,
+				startedAt: undefined,
+				player_id: undefined,
+				present_id: undefined,
+				updatedAt: new Date(res.updated_at)
+			});
 
-		playEventStore.set({});
+			playEventStore.set({});
+		}
 	}
 
 	async function onRollClick() {
-		showInfo('Rolling...');
-		const res = await move('roll');
-		if (res) {
-			setGameState(res);
+		if ($game.startedAt && !$currentPlayer) {
+			showInfo('Rolling...');
+			const res = await move('roll');
+			if (res) {
+				setGameState(res);
+			}
+		}
+	}
+
+	async function onRollKeypress(ev: KeyboardEvent) {
+		if (ev.key === 'Enter' || ev.key === ' ') {
+			return onRollClick();
 		}
 	}
 
@@ -287,14 +299,21 @@
 		Loading...
 	{:else}
 		<div class="flex flex-col gap-4">
-			<div class="snap-x scroll-px-4 snap-mandatory scroll-smooth overflow-x-auto flex gap-2">
+			<div
+				class="snap-x scroll-px-4 snap-mandatory scroll-smooth overflow-x-auto flex gap-2"
+				on:click={onRollClick}
+				on:keypress={onRollKeypress}
+				role="button"
+				tabindex="0"
+				aria-disabled={!!$currentPlayer}
+			>
 				{#each $gameState.waiting as p}
 					<img
 						src={p.images[0]}
 						alt={p.name}
 						class="snap-end {p === $currentPlayer
 							? 'bg-warning-400'
-							: 'bg-surface-700'} snap-center h-48 aspect-square object-cover rounded-full p-2"
+							: 'bg-surface-700'} snap-center w-48 h-48 aspect-square object-cover rounded-full p-2"
 					/>
 				{/each}
 			</div>
